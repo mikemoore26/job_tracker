@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block content %}
+  <a href="{{ url_for('add_job') }}" class="bg-blue-500 text-white px-4 py-2 rounded">Add Job</a>
+  <div class="mt-6 space-y-4">
+    {% for job in jobs %}
+      <div class="bg-white p-4 rounded shadow">
+        <h2 class="text-xl font-semibold">{{ job.title }} at {{ job.company }}</h2>
+        <p>{{ job.location }} - <strong>Status:</strong> {{ job.status }}</p>
+        {% if job.notes %}<p><strong>Notes:</strong> {{ job.notes }}</p>{% endif %}
+      </div>
+    {% else %}
+      <p>No jobs yet. <a href="{{ url_for('add_job') }}">Add one</a>!</p>
+    {% endfor %}
+  </div>
+{% endblock %}

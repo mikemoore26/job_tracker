@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block content %}
+  <form method="POST" class="space-y-4 bg-white p-6 rounded shadow">
+    <input name="company" placeholder="Company" required class="w-full p-2 border rounded">
+    <input name="title" placeholder="Job Title" required class="w-full p-2 border rounded">
+    <input name="location" placeholder="Location" class="w-full p-2 border rounded">
+    <select name="status" class="w-full p-2 border rounded">
+      <option>Not Applied</option>
+      <option>Applied</option>
+      <option>Interviewing</option>
+      <option>Rejected</option>
+      <option>Offer</option>
+    </select>
+    <textarea name="notes" placeholder="Notes (optional)" class="w-full p-2 border rounded"></textarea>
+    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Save Job</button>
+  </form>
+{% endblock %}
