@@ -18,6 +18,20 @@ def index():
         flash('You need to log in first!', 'warning')
         return redirect(url_for('login'))
     
+    search_query = request.args.get('search')
+    status = request.args.get('status')
+
+    query = job.query.filter_by(user_id=session['user_id'])
+
+    if search_query:
+        query = query.filter(
+            (job.company.ilike(f'%{search_query}%')) |
+            (job.title.ilike(f'%{search_query}%')) 
+        )
+
+    if status:
+        query = query.filter_by(status=status)
+
     jobs = job.query.all()
     return render_template('index.html', jobs=jobs)
 
