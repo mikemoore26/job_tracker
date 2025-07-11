@@ -78,13 +78,14 @@ def dashboard():
 def add_job():
     
     if request.method == "POST":
+        user_id = session['user_id']
         company = request.form.get("company")
         title = request.form.get("title")
         location = request.form.get("location")
         status = request.form.get("status")
         notes = request.form.get("notes")
 
-        new_job = job(company=company, title=title, location=location, status=status, notes=notes)
+        new_job = job(user_id=user_id,company=company, title=title, location=location, status=status, notes=notes)
         db.session.add(new_job)
         db.session.commit()
         return redirect(url_for('index'))
