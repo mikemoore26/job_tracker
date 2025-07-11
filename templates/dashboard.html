@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2 class="text-2xl font-bold mb-4">Your Job Application Stats</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <div class="bg-white p-6 rounded shadow text-center">
+    <p class="text-gray-600">Total Jobs</p>
+    <h3 class="text-3xl font-bold text-blue-600">{{ total }}</h3>
+  </div>
+
+  <div class="bg-white p-6 rounded shadow text-center">
+    <p class="text-gray-600">Applied</p>
+    <h3 class="text-3xl font-bold text-green-600">{{ applied }}</h3>
+  </div>
+
+  <div class="bg-white p-6 rounded shadow text-center">
+    <p class="text-gray-600">Interviewing</p>
+    <h3 class="text-3xl font-bold text-yellow-600">{{ interviewing }}</h3>
+  </div>
+
+  <div class="bg-white p-6 rounded shadow text-center">
+    <p class="text-gray-600">Offers</p>
+    <h3 class="text-3xl font-bold text-purple-600">{{ offers }}</h3>
+  </div>
+
+  <div class="bg-white p-6 rounded shadow text-center">
+    <p class="text-gray-600">Rejections</p>
+    <h3 class="text-3xl font-bold text-red-600">{{ rejections }}</h3>
+  </div>
+</div>
+
+{% endblock %}
