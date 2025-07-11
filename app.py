@@ -41,7 +41,7 @@ def add_job():
 
     return render_template('add_job.html')
 
-@app.route("register", methods=["GET", "POST"])
+@app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
         username = request.form['username']
