@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from models import db , job, User
 from functools import wraps
+from flask_migrate import Migrate
+from dotenv import load_dotenv
 import os
 
 #DECORATORS
@@ -13,12 +15,15 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+load_dotenv()
+
 app = Flask(__name__)
-app.secret_key = "mike371326moore888809"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///jobs.db'
+app.secret_key = os.environ.get('SECRET_KEY')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
+migrate = Migrate(app, db)
 
 with app.app_context():
     db.create_all()
