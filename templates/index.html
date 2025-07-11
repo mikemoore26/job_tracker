@@ -2,14 +2,23 @@
 {% block content %}
   <a href="{{ url_for('add_job') }}" class="bg-blue-500 text-white px-4 py-2 rounded">Add Job</a>
   <div class="mt-6 space-y-4">
-    {% for job in jobs %}
-      <div class="bg-white p-4 rounded shadow">
-        <h2 class="text-xl font-semibold">{{ job.title }} at {{ job.company }}</h2>
-        <p>{{ job.location }} - <strong>Status:</strong> {{ job.status }}</p>
-        {% if job.notes %}<p><strong>Notes:</strong> {{ job.notes }}</p>{% endif %}
-      </div>
-    {% else %}
-      <p>No jobs yet. <a href="{{ url_for('add_job') }}">Add one</a>!</p>
-    {% endfor %}
+   {% for job in jobs %}
+  <div class="bg-white p-4 rounded shadow flex justify-between items-center">
+    <div>
+      <h2 class="text-xl font-semibold">{{ job.title }} at {{ job.company }}</h2>
+      <p>{{ job.location }} - <strong>Status:</strong> {{ job.status }}</p>
+      {% if job.notes %}<p><strong>Notes:</strong> {{ job.notes }}</p>{% endif %}
+    </div>
+    <div class="space-x-2">
+      <a href="{{ url_for('edit_job', job_id=job.id) }}" class="bg-yellow-400 px-3 py-1 rounded text-black">Edit</a>
+      <form method="POST" action="{{ url_for('delete_job', job_id=job.id) }}" style="display:inline;">
+        <button type="submit" class="bg-red-500 px-3 py-1 rounded text-white" onclick="return confirm('Are you sure?');">Delete</button>
+      </form>
+    </div>
+  </div>
+{% else %}
+  <p>No jobs yet. <a href="{{ url_for('add_job') }}">Add one</a>!</p>
+{% endfor %}
+
   </div>
 {% endblock %}
