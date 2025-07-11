@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for
-from models import db , job
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+from models import db , job, User
+import os
 
 app = Flask(__name__)
+app.secret_key = "mike371326moore888809"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///jobs.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -12,11 +14,19 @@ with app.app_context():
 
 @app.route('/')
 def index():
+    if 'user_id' not in session:
+        flash('You need to log in first!', 'warning')
+        return redirect(url_for('login'))
+    
     jobs = job.query.all()
     return render_template('index.html', jobs=jobs)
 
 @app.route("/add", methods=["GET", "POST"])
 def add_job():
+    if 'user_id' not in session:
+        flash('You need to log in first!', 'warning')
+        return redirect(url_for('login'))
+    
     if request.method == "POST":
         company = request.form.get("company")
         title = request.form.get("title")
@@ -31,8 +41,46 @@ def add_job():
 
     return render_template('add_job.html')
 
+@app.route("register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form['username']
+        password = request.form['password']
+        if User.query.filter_by(username=username).first():
+            flash('Username already exists!', 'danger')
+            return redirect(url_for('register'))
+        user = User(username=username)
+        user.set_password(password) 
+        db.session.add(user)
+        db.session.commit()
+        flash('Registration successful!', 'success')
+        return redirect(url_for('login'))
+    return render_template('register.html')
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        user = User.query.filter_by(username=request.form['username']).first()
+        if user and user.check_password(request.form['password']):
+            session['user_id'] = user.id
+            flash('Login successful!', 'success')
+            return redirect(url_for('index'))
+        flash('Invalid username or password', 'danger')
+        return redirect(url_for('login'))
+    return render_template('login.html')
+
+@app.route("/logout")
+def logout():
+    session.pop('user_id', None)
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('index'))
+
 @app.route("/delete/<int:job_id>", methods=["POST"])
 def delete_job(job_id):
+    if 'user_id' not in session:
+        flash('You need to log in first!', 'warning')
+        return redirect(url_for('login'))
+    
     job_to_delete = job.query.get_or_404(job_id)
     db.session.delete(job_to_delete)
     db.session.commit()
@@ -40,6 +88,10 @@ def delete_job(job_id):
 
 @app.route("/edit/<int:job_id>", methods=["GET", "POST"])
 def edit_job(job_id):
+    if 'user_id' not in session:
+        flash('You need to log in first!', 'warning')
+        return redirect(url_for('login'))
+    
     job = job.query.get_or_404(job_id)
     if request.method == "POST":
         job.company = request.form['company']
