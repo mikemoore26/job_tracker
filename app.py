@@ -55,21 +55,34 @@ def index():
 @app.route("/dashboard")
 @login_required
 def dashboard():
-    uid = session["user_id"]
+    uid = session['user_id']
+
+    # count status 
+
+    status_counts = db.session.query(job.status, db.func.count(job.id))\
+        .filter_by(user_id=uid)\
+        .group_by(job.status).all()
+    
+    labels = [s[0] for s in status_counts]
+    counts = [s[1] for s in status_counts]
+
+    return render_template('dashboard.html', labels=labels, counts=counts)
+# def dashboard():
+#     uid = session["user_id"]
 
 
-    total_jobs = job.query.filter_by(user_id=uid).count()
-    applied_jobs = job.query.filter_by(user_id=uid, status='Applied').count()
-    interviewing = job.query.filter_by(user_id=uid, status='Interviewing').count()
-    offer_received = job.query.filter_by(user_id=uid, status='Offer Received').count()
-    rejected = job.query.filter_by(user_id=uid, status='Rejected').count()
+#     total_jobs = job.query.filter_by(user_id=uid).count()
+#     applied_jobs = job.query.filter_by(user_id=uid, status='Applied').count()
+#     interviewing = job.query.filter_by(user_id=uid, status='Interviewing').count()
+#     offer_received = job.query.filter_by(user_id=uid, status='Offer Received').count()
+#     rejected = job.query.filter_by(user_id=uid, status='Rejected').count()
 
-    return render_template('dashboard.html',
-                           total_jobs=total_jobs,
-                           applied_jobs=applied_jobs,
-                           interviewing=interviewing,
-                           offer_received=offer_received,
-                           rejected=rejected)
+#     return render_template('dashboard.html',
+#                            total_jobs=total_jobs,
+#                            applied_jobs=applied_jobs,
+#                            interviewing=interviewing,
+#                            offer_received=offer_received,
+#                            rejected=rejected)
 
 
 

@@ -2,6 +2,8 @@
 {% block content %}
 
 <h2 class="text-2xl font-bold mb-4">Your Job Application Stats</h2>
+<h3 class="text-xl font-semibold mb-2">Status Breakdown</h3>
+<canvas id="statusChart" width="400" height="200" class="mb-8"></canvas>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
   <div class="bg-white p-6 rounded shadow text-center">
@@ -29,5 +31,32 @@
     <h3 class="text-3xl font-bold text-red-600">{{ rejections }}</h3>
   </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const ctx = document.getElementById('statusChart').getContext('2d');
+const statusChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+        labels: {{ labels | tojson }},
+        datasets: [{
+            label: 'Job Statuses',
+            data: {{ counts | tojson }},
+            backgroundColor: [
+                '#3b82f6', // blue
+                '#10b981', // green
+                '#facc15', // yellow
+                '#f97316', // orange
+                '#ef4444'  // red
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+    }
+});
+</script>
 
 {% endblock %}
