@@ -28,6 +28,13 @@
     </div>
   </div>
 {% else %}
+{% if jobs.resume_path %}
+  <a href="{{ url_for('static', filename=job.resume_path.split('static/')[-1]) }}" 
+     class="text-blue-500 underline" target="_blank">
+    📄 View Resume
+  </a>
+{% endif %}
+
   <p>No jobs yet. <a href="{{ url_for('add_job') }}">Add one</a>!</p>
 {% endfor %}
 

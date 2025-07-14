@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from models import db , job, User
+from models import db , Job, User
 from functools import wraps
 from flask_migrate import Migrate
 from dotenv import load_dotenv
+from werkzeug.utils import secure_filename
 import os
 
 #DECORATORS
@@ -15,12 +16,21 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+UPLOAD_FOLDER = "static/uploads"
+ALLOWED_EXTENSIONS = {'pdf', 'docx'}
+
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
 
 db.init_app(app)
 migrate = Migrate(app, db)
@@ -38,18 +48,18 @@ def index():
     search_query = request.args.get('search')
     status = request.args.get('status')
 
-    query = job.query.filter_by(user_id=session['user_id'])
+    query = Job.query.filter_by(user_id=session['user_id'])
 
     if search_query:
         query = query.filter(
-            (job.company.ilike(f'%{search_query}%')) |
-            (job.title.ilike(f'%{search_query}%')) 
+            (Job.company.ilike(f'%{search_query}%')) |
+            (Job.title.ilike(f'%{search_query}%')) 
         )
 
     if status:
         query = query.filter_by(status=status)
 
-    jobs = job.query.all()
+    jobs = Job.query.all()
     return render_template('index.html', jobs=jobs)
 
 @app.route("/dashboard")
@@ -59,9 +69,9 @@ def dashboard():
 
     # count status 
 
-    status_counts = db.session.query(job.status, db.func.count(job.id))\
+    status_counts = db.session.query(Job.status, db.func.count(Job.id))\
         .filter_by(user_id=uid)\
-        .group_by(job.status).all()
+        .group_by(Job.status).all()
     
     labels = [s[0] for s in status_counts]
     counts = [s[1] for s in status_counts]
@@ -89,20 +99,35 @@ def dashboard():
 @app.route("/add", methods=["GET", "POST"])
 @login_required
 def add_job():
-    
-    if request.method == "POST":
-        new_job = job(
-            user_id = session['user_id'],
-            company = request.form.get("company"),
-            title = request.form.get("title"),
-            location = request.form.get("location"),
-            status = request.form.get("status"),
-            notes = request.form.get("notes"),
-        )
+    if request.method == 'POST':
+        title = request.form['title']
+        company = request.form['company']
+        status = request.form['status']
+        location = request.form['location']
+        notes = request.form['notes']
+        resume_file = request.files.get('resume')
+        
+        resume_path = None
 
-        db.session.add(new_job)
-        db.session.commit()
-        return redirect(url_for('index'))
+        if resume_file and allowed_file(resume_file.filename):
+            filename = secure_filename(resume_file.filename)
+            user_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(session['user_id']))
+            os.makedirs(user_folder, exist_ok=True)
+            resume_path = os.path.join(user_folder, filename)
+            resume_file.save(resume_path)
+
+            job = Job(
+                title=title,
+                company=company,
+                status=status,
+                notes=notes,
+                location=location,
+                user_id=session['user_id'],
+                resume_path=resume_path
+            )
+            db.session.add(job)
+            db.session.commit()
+            return redirect(url_for('index'))
 
     return render_template('add_job.html')
 
@@ -154,8 +179,7 @@ def delete_job(job_id):
 @app.route("/edit/<int:job_id>", methods=["GET", "POST"])
 @login_required
 def edit_job(job_id):
-    
-    job = job.query.get_or_404(job_id)
+    job = Job.query.get_or_404(job_id)
     if request.method == "POST":
         job.company = request.form['company']
         job.title = request.form["title"]
